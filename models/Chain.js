@@ -1,12 +1,10 @@
 const async = require('async');
 const mongoose = require('mongoose');
-const validator = require('validator');
 
-const getAverageBlockTime = require('./functions/getAverageBlockTime.js');
 const getChain = require('./functions/getChain.js');
 const getLatestBlockHeight = require('./functions/getLatestBlockHeight.js');
 const getLatestUpdate = require('./functions/getLatestUpdate.js');
-const getRestAPIURLFromIdentifier = require('./functions/getRestAPIURLFromIdentifier.js');
+const getRestAPIListFromIdentifier = require('./functions/getRestAPIListFromIdentifier.js');
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
@@ -65,46 +63,45 @@ ChainSchema.statics.createChain = function (data, callback) {
     return callback('bad_request');
 
   if (!data.identifier || typeof data.identifier != 'string' || !data.identifier.length || data.identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
-    return callback('bad_request'); 
+    return callback('bad_request');
+
+  if (!data.average_block_time || typeof data.average_block_time != 'number' || data.average_block_time < 0)
+    return callback('bad_request');
 
   const identifier = data.identifier.trim();
 
-  getRestAPIURLFromIdentifier(identifier, (err, rest_api_url) => {
+  getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
     if (err) return callback(err);
 
     const call_data = {
       identifier,
-      rest_api_url
+      rest_api_list
     };
 
-    getAverageBlockTime(call_data, (err, average_block_time) => {
+    getLatestBlockHeight(call_data, (err, latest_block_height) => {
       if (err) return callback(err);
-  
-      getLatestBlockHeight(call_data, (err, latest_block_height) => {
+
+      getLatestUpdate(call_data, (err, latest_update) => {
         if (err) return callback(err);
-  
-        getLatestUpdate(call_data, (err, latest_update) => {
-          if (err) return callback(err);
-  
-          const newChain = new Chain({
-            identifier: data.identifier,
-            average_block_time,
-            latest_block_height,
-            latest_update_id: latest_update.id,
-            latest_update_block_height: latest_update.block_height,
-            is_latest_update_active: latest_update.block_height <= latest_block_height
-          });
-  
-          newChain.save((err, chain) => {
-            if (err && err.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
-              return callback('duplicated_unique_field');
-            if (err) return callback('database_error');
-        
-            getChain(chain, (err, chain) => {
-              if (err) return callback(err);
-        
-              return callback(null, chain);
-            });
+
+        const newChain = new Chain({
+          identifier: data.identifier,
+          average_block_time: data.average_block_time,
+          latest_block_height,
+          latest_update_id: latest_update.id,
+          latest_update_block_height: latest_update.block_height,
+          is_latest_update_active: latest_update.block_height <= latest_block_height
+        });
+
+        newChain.save((err, chain) => {
+          if (err && err.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
+            return callback('duplicated_unique_field');
+          if (err) return callback('database_error');
+      
+          getChain(chain, (err, chain) => {
+            if (err) return callback(err);
+      
+            return callback(null, chain);
           });
         });
       });
@@ -142,7 +139,37 @@ ChainSchema.statics.findChainByIdentifierAndFormat = function (identifier, callb
   });
 };
 
-ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, callback) {
+ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, data, callback) {
+  const Chain = this;
+
+  if (!_identifier || typeof _identifier != 'string' || !_identifier.length || _identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
+    return callback('bad_request');
+
+  if (!data || typeof data != 'object')
+    return callback('bad_request');
+
+  if (!data.average_block_time || typeof data.average_block_time != 'number' || data.average_block_time < 0)
+    return callback('bad_request');
+
+  const identifier = _identifier.trim();
+
+  Chain.findOneAndUpdate({
+    identifier
+  }, { $set: {
+    average_block_time: data.average_block_time
+  }}, { new: true }, (err, chain) => {
+    if (err) return callback('database_error');
+    if (!chain) return callback('document_not_found');
+
+    getChain(chain, (err, chain) => {
+      if (err) return callback(err);
+
+      return callback(null, chain);
+    });
+  });
+};
+
+ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, callback) {
   const Chain = this;
 
   if (!_identifier || typeof _identifier != 'string' || !_identifier.length || _identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
@@ -153,12 +180,12 @@ ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, call
   Chain.findChainByIdentifier(identifier, (err, chain) => {
     if (err) return callback(err);
 
-    getRestAPIURLFromIdentifier(identifier, (err, rest_api_url) => {
+    getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
       if (err) return callback(err);
 
       const call_data = {
         identifier,
-        rest_api_url
+        rest_api_list
       };
 
       getAverageBlockTime(call_data, (err, average_block_time) => {
@@ -172,14 +199,14 @@ ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, call
     
             Chain.findOneAndUpdate({
               identifier
-            }, {
+            }, { $set: {
               average_block_time,
               latest_block_height,
               latest_update_id: latest_update.id,
               latest_update_block_height: latest_update.block_height,
               is_latest_update_active: latest_update.block_height <= latest_block_height,
               latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update.id ? false : true
-            }, {
+            }}, {
               new: true
             }, (err, chain) => {
               if (err) return callback('database_error');
@@ -212,7 +239,7 @@ ChainSchema.statics.findChains = function (callback) {
     .catch(_ => callback('database_error'));
 };
 
-ChainSchema.statics.findNotUpdatedChains = function (callback) {
+ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
   Chain.find({
@@ -220,9 +247,42 @@ ChainSchema.statics.findNotUpdatedChains = function (callback) {
     latest_update_status: false
   }, (err, chains) => {
     if (err) return callback('database_error');
-    if (!chains || !chains.length) return callback(null, []);
 
-    return callback(null, chains);
+    async.timesSeries(
+      chains.length,
+      (time, next) => getChain(chains[time], (err, chain) => next(err, chain)),
+      (err, chains) => callback(err, chains)
+    );
+  });
+};
+
+ChainSchema.statics.findChainsWithMissedUpdateAndUpdateLastPingTime = function (callback) {
+  const Chain = this;
+
+  Chain.find({
+    is_latest_update_active: false,
+    latest_update_status: false,
+    latest_update_missed_last_message_time: { $lte: Date.now() - MISSED_UPDATE_PING_INTERVAL }
+  }, (err, chains) => {
+    if (err) return callback('database_error');
+    
+    async.timesSeries(
+      chains.length,
+      (time, next) => Chain.findByIdAndUpdate(
+        chains[time]._id,
+        { $set: {
+          latest_update_missed_last_message_time: Date.now()
+        } },
+        { new: true },
+        (err, chain) => {
+          if (err) return next('database_error');
+          if (!chain) return next('document_not_found');
+
+          getChain(chain, (err, chain) => next(err, chain));
+        }
+      ),
+      (err, chains) => callback(err, chains)
+    );
   });
 };
 
