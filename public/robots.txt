@@ -1,0 +1,4 @@
+#Private Bot
+
+User-agent: *
+Disallow: /
