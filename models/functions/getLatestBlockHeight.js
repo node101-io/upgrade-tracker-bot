@@ -22,4 +22,4 @@ const fetchLatestBlockHeight = index => {
 
 module.exports = (urls, callback) => {
   fetchLatestBlockHeight(0);
-}
+};
