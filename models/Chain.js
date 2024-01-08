@@ -243,8 +243,7 @@ ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
   Chain.find({
-    is_latest_update_active: false,
-    latest_update_status: false
+    is_latest_update_active: false
   }, (err, chains) => {
     if (err) return callback('database_error');
 
