@@ -1,10 +1,10 @@
 const async = require('async');
 const mongoose = require('mongoose');
 
-const getChain = require('./functions/getChain.js');
-const getLatestBlockHeight = require('./functions/getLatestBlockHeight.js');
-const getLatestUpdate = require('./functions/getLatestUpdate.js');
-const getRestAPIListFromIdentifier = require('./functions/getRestAPIListFromIdentifier.js');
+const getChain = require('./functions/getChain');
+const getLatestBlockHeight = require('./functions/getLatestBlockHeight');
+const getLatestUpdate = require('./functions/getLatestUpdate');
+const getRestAPIListFromIdentifier = require('./functions/getRestAPIListFromIdentifier');
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
