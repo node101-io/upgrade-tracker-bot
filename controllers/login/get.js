@@ -4,7 +4,7 @@ module.exports = (req, res) => {
     title: 'Login',
     includes: {
       external: {
-        css: ['general', 'page'],
+        css: ['form', 'general', 'page', 'text'],
         js: []
       }
     }
