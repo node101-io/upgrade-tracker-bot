@@ -1,0 +1,11 @@
+{
+  "name": "validator.node101",
+  "version": "1.0.0",
+  "description": "node101 validator management tool",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yunus Gürlek",
+  "license": "MIT"
+}
