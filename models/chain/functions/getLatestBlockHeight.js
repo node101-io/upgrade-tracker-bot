@@ -23,5 +23,9 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
 };
 
 module.exports = (rest_api_list, callback) => {
-  return fetchLatestBlockHeight(0, rest_api_list, callback);
+  fetchLatestBlockHeight(0, rest_api_list, (err, height) => {
+    if (err) return callback(err);
+
+    return callback(null, height);
+  });
 };

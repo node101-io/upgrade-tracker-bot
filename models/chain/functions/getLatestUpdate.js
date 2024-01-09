@@ -26,5 +26,9 @@ const fetchLatestUpdate = (index, rest_api_list, callback) => {
 };
 
 module.exports = (rest_api_list, callback) => {
-  return fetchLatestUpdate(0, rest_api_list, callback);
+  fetchLatestUpdate(0, rest_api_list, (err, update) => {
+    if (err) return callback(err);
+
+    return callback(null, update);
+  });
 };
