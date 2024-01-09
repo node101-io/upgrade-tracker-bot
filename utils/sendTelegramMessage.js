@@ -36,7 +36,7 @@ module.exports = (type, data, callback) => {
 
   if (type == 'regular_update') {
     let message = 'Ufukta güncelleme var! 🚀🚀🚀';
-    
+
     for (const chain of data.chains) {
       message += '\n\n';
       message += `⛓️ ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}\n`;
