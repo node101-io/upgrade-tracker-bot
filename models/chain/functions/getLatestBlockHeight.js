@@ -4,7 +4,7 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
   fetch(`${rest_api_list[index]}/cosmos/base/tendermint/v1beta1/blocks/latest`)
     .then(res => res.json())
     .then(json => {
-      const height = json?.block?.header?.height;
+      const height = json.block?.header?.height;
 
       if (height)
         return callback(null, height);
@@ -18,7 +18,7 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
       if (index < rest_api_list.length - 1)
         return fetchLatestBlockHeight(index + 1, rest_api_list, callback);
 
-      return callback('fetch_error', null);
+      return callback('document_not_found', null);
     });
 };
 

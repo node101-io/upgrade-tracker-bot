@@ -18,6 +18,6 @@ module.exports = (identifier, callback) => {
       return callback(null, rest_api_list);
     })
     .catch(_ => {
-      return callback('fetch_error', null);
+      return callback('document_not_found', null);
     });
 };

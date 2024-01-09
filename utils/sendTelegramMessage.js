@@ -20,7 +20,7 @@ const sendMessage = (message, callback) => {
       return callback(null);
     })
     .catch(_ => {
-      return callback('fetch_error');
+      return callback('network_error');
     });
 };
 
