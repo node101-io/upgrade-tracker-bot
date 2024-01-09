@@ -8,7 +8,7 @@ block content
       each chain in chains
         .each-chain-wrapper
           h2.general-text-subtitle= chain.identifier
-          span.general-text-text(style='margin-left: 5px') (#{chain.latest_block_height})
+          span.general-text-text(style='margin-left: 5px') (~#{chain.latest_block_height})
           a.general-form-button(href='/update?identifier=' + chain.identifier style='margin-left: auto;') Edit
           if !chain.latest_update_status
             a.general-form-button(href='/status?identifier=' + chain.identifier style='margin-left: 20px') Set as Updated
