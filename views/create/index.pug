@@ -1,0 +1,10 @@
+extends ../partials/head
+block content
+  .all-wrapper
+    form.form-wrapper(method='POST' action='/create')
+      h1.general-text-title Create Bot
+      input.general-form-input(type='text' name='identifier' placeholder='Chain Identifier' required autofocus)
+      input.general-form-input(type='text' name='average_block_time' placeholder='Average Block Time (seconds)' required)
+      .general-form-button-wrapper
+        a.general-form-button(href='/' style='margin-right: 20px') Back
+        button.general-form-button Create

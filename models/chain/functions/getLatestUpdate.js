@@ -7,7 +7,7 @@ const fetchLatestUpdate = (index, rest_api_list, callback) => {
       json?.proposals.forEach(proposal => {
         if (proposal.messages?.[0]?.content?.['@type'].includes('SoftwareUpgradeProposal'))
           return callback(null, {
-            identifier: proposal.id,
+            id: proposal.id,
             block_height: proposal.messages[0].content.plan?.height,
           });
       });
@@ -25,6 +25,6 @@ const fetchLatestUpdate = (index, rest_api_list, callback) => {
     });
 };
 
-module.exports = (data, callback) => {
-  return fetchLatestUpdate(0, data.rest_api_list, callback);
+module.exports = (rest_api_list, callback) => {
+  return fetchLatestUpdate(0, rest_api_list, callback);
 };

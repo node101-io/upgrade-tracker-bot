@@ -65,7 +65,7 @@ ChainSchema.statics.createChain = function (data, callback) {
   if (!data.identifier || typeof data.identifier != 'string' || !data.identifier.length || data.identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
     return callback('bad_request');
 
-  if (!data.average_block_time || typeof data.average_block_time != 'number' || data.average_block_time < 0)
+  if (!data.average_block_time || isNaN(Number(data.average_block_time)) || Number(data.average_block_time) < 0)
     return callback('bad_request');
 
   const identifier = data.identifier.trim();
@@ -73,24 +73,19 @@ ChainSchema.statics.createChain = function (data, callback) {
   getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
     if (err) return callback(err);
 
-    const call_data = {
-      identifier,
-      rest_api_list
-    };
-
-    getLatestBlockHeight(call_data, (err, latest_block_height) => {
+    getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
       if (err) return callback(err);
 
-      getLatestUpdate(call_data, (err, latest_update) => {
-        if (err) return callback(err);
+      getLatestUpdate(rest_api_list, (err, latest_update) => {
+        if (err && err != 'document_not_found') return callback(err);
 
         const newChain = new Chain({
           identifier: data.identifier,
-          average_block_time: data.average_block_time,
+          average_block_time: Number(data.average_block_time),
           latest_block_height,
-          latest_update_id: latest_update.id,
-          latest_update_block_height: latest_update.block_height,
-          is_latest_update_active: latest_update.block_height <= latest_block_height
+          latest_update_id: err ? null : latest_update.id,
+          latest_update_block_height: err ? null : latest_update.block_height,
+          is_latest_update_active: err ? true : (latest_update.block_height <= latest_block_height)
         });
 
         newChain.save((err, chain) => {
@@ -148,7 +143,7 @@ ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, data
   if (!data || typeof data != 'object')
     return callback('bad_request');
 
-  if (!data.average_block_time || typeof data.average_block_time != 'number' || data.average_block_time < 0)
+  if (!data.average_block_time || isNaN(Number(data.average_block_time)) || Number(data.average_block_time) < 0)
     return callback('bad_request');
 
   const identifier = _identifier.trim();
@@ -156,7 +151,7 @@ ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, data
   Chain.findOneAndUpdate({
     identifier
   }, { $set: {
-    average_block_time: data.average_block_time
+    average_block_time: Number(data.average_block_time)
   }}, { new: true }, (err, chain) => {
     if (err) return callback('database_error');
     if (!chain) return callback('document_not_found');
@@ -183,40 +178,30 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
     getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
       if (err) return callback(err);
 
-      const call_data = {
-        identifier,
-        rest_api_list
-      };
-
-      getAverageBlockTime(call_data, (err, average_block_time) => {
+      getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
         if (err) return callback(err);
-    
-        getLatestBlockHeight(call_data, (err, latest_block_height) => {
+  
+        getLatestUpdate(rest_api_list, (err, latest_update) => {
           if (err) return callback(err);
-    
-          getLatestUpdate(call_data, (err, latest_update) => {
-            if (err) return callback(err);
-    
-            Chain.findOneAndUpdate({
-              identifier
-            }, { $set: {
-              average_block_time,
-              latest_block_height,
-              latest_update_id: latest_update.id,
-              latest_update_block_height: latest_update.block_height,
-              is_latest_update_active: latest_update.block_height <= latest_block_height,
-              latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update.id ? false : true
-            }}, {
-              new: true
-            }, (err, chain) => {
-              if (err) return callback('database_error');
-              if (!chain) return callback('document_not_found');
-    
-              getChain(chain, (err, chain) => {
-                if (err) return callback(err);
-    
-                return callback(null, chain);
-              });
+  
+          Chain.findOneAndUpdate({
+            identifier
+          }, { $set: {
+            latest_block_height,
+            latest_update_id: latest_update.id,
+            latest_update_block_height: latest_update.block_height,
+            is_latest_update_active: latest_update.block_height <= latest_block_height,
+            latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update.id ? false : true
+          }}, {
+            new: true
+          }, (err, chain) => {
+            if (err) return callback('database_error');
+            if (!chain) return callback('document_not_found');
+  
+            getChain(chain, (err, chain) => {
+              if (err) return callback(err);
+  
+              return callback(null, chain);
             });
           });
         });

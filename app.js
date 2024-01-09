@@ -32,6 +32,7 @@ if (cluster.isMaster) {
   const MAX_SERVER_UPLOAD_LIMIT = 52428800;
   const MAX_SERVER_PARAMETER_LIMIT = 50000;
 
+  const createRouteController = require('./routes/createRoute');
   const indexRouteController = require('./routes/indexRoute');
   const loginRouteController = require('./routes/loginRoute');
   const updateRouteController = require('./routes/updateRoute');
@@ -76,6 +77,7 @@ if (cluster.isMaster) {
   });
 
   app.use('/', indexRouteController);
+  app.use('/create', createRouteController);
   app.use('/login', loginRouteController);
   app.use('/update', updateRouteController);
 

@@ -1,4 +1,4 @@
-const Chain = require('../../models/Chain');
+const Chain = require('../../models/chain/Chain');
 
 module.exports = (req, res) => {
   Chain.findChains((err, chains) => {
@@ -9,7 +9,7 @@ module.exports = (req, res) => {
       title: 'Dashboard',
       includes: {
         external: {
-          css: ['general', 'page'],
+          css: ['form', 'general', 'page', 'text'],
           js: []
         }
       },
