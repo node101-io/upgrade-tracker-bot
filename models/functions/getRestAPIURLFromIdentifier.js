@@ -6,28 +6,18 @@ module.exports = (identifier, callback) => {
     .then(json => {
       const providers = json?.apis?.rest;
 
-      if (providers) {
-        const addresses = [];
+      const rest_api_list = [];
 
-        for (let i = 0; i < providers.length && i < 3; i++) {
-          addresses.push(providers[i].address);
-        };
-
-        return callback(null, {
-          success: true,
-          urls: addresses,
-        });
+      for (let i = 0; i < providers?.length && i < 3; i++) {
+        rest_api_list.push(providers[i].address);
       };
 
-      return callback(null, {
-        success: false,
-        urls: null,
-      });
+      if (!rest_api_list)
+        return callback('document_not_found', null);
+
+      return callback(null, rest_api_list);
     })
-    .catch(err => {
-      return callback(err, {
-        success: false,
-        urls: null,
-      });
+    .catch(_ => {
+      return callback('fetch_error', null);
     });
 };

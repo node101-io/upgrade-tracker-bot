@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
-const fetchLatestBlockHeight = index => {
-  fetch(`${urls[index]}/cosmos/base/tendermint/v1beta1/blocks/latest`)
+const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
+  fetch(`${rest_api_list[index]}/cosmos/base/tendermint/v1beta1/blocks/latest`)
     .then(res => res.json())
     .then(json => {
       const height = json?.block?.header?.height;
@@ -9,17 +9,19 @@ const fetchLatestBlockHeight = index => {
       if (height)
         return callback(null, height);
 
-      if (index < urls.length - 1)
-        return fetchLatestBlockHeight(index + 1);
-    })
-    .catch(err => {
-      if (index < urls.length - 1)
-        return fetchLatestBlockHeight(index + 1);
+      if (index < rest_api_list.length - 1)
+        return fetchLatestBlockHeight(index + 1, rest_api_list, callback);
 
-      return callback(err, null);
+      return callback('document_not_found', null);
+    })
+    .catch(_ => {
+      if (index < rest_api_list.length - 1)
+        return fetchLatestBlockHeight(index + 1, rest_api_list, callback);
+
+      return callback('fetch_error', null);
     });
 };
 
-module.exports = (urls, callback) => {
-  fetchLatestBlockHeight(0);
+module.exports = (data, callback) => {
+  return fetchLatestBlockHeight(0, data.rest_api_list, callback);
 };
