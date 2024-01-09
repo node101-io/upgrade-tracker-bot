@@ -2,7 +2,7 @@ const Chain = require('../../models/chain/Chain');
 
 module.exports = (req, res) => {
   Chain.findChains((err, chains) => {
-    if (err) return res.redirect('/login');
+    if (err) return res.redirect('/error?message=' + err);
 
     return res.render('index/index', {
       page: 'index/index',

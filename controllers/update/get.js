@@ -2,7 +2,7 @@ const Chain = require('../../models/chain/Chain');
 
 module.exports = (req, res) => {
   Chain.findChainByIdentifierAndFormat(req.query.identifier, (err, chain) => {
-    if (err) return res.redirect('/');
+    if (err) return res.redirect('/error?message=' + err);
 
     return res.render('update/index', {
       page: 'update/index',
