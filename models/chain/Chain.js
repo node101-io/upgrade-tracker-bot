@@ -134,6 +134,28 @@ ChainSchema.statics.findChainByIdentifierAndFormat = function (identifier, callb
   });
 };
 
+ChainSchema.statics.findChainByIdentifierAndSetStatus = function (identifier, callback) {
+  const Chain = this;
+
+  if (!identifier || typeof identifier != 'string' || !identifier.length || identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
+    return callback('bad_request');
+
+  Chain.findOneAndUpdate({
+    identifier: identifier.trim()
+  }, { $set: {
+    is_latest_update_active: true
+  }}, { new: true }, (err, chain) => {
+    if (err) return callback('database_error');
+    if (!chain) return callback('document_not_found');
+
+    getChain(chain, (err, chain) => {
+      if (err) return callback(err);
+
+      return callback(null, chain);
+    });
+  });
+};
+
 ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, data, callback) {
   const Chain = this;
 
@@ -161,6 +183,20 @@ ChainSchema.statics.findChainByIdentifierAndUpdate = function (_identifier, data
 
       return callback(null, chain);
     });
+  });
+};
+
+ChainSchema.statics.findChainByIdentifierAndDelete = function (identifier, callback) {
+  const Chain = this;
+
+  if (!identifier || typeof identifier != 'string' || !identifier.length || identifier.length > MAX_DATABASE_TEXT_FIELD_LENGTH)
+    return callback('bad_request');
+
+  Chain.findOneAndDelete({ identifier: identifier.trim() }, (err, chain) => {
+    if (err) return callback('database_error');
+    if (!chain) return callback('document_not_found');
+
+    return callback(null);
   });
 };
 

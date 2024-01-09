@@ -33,8 +33,10 @@ if (cluster.isMaster) {
   const MAX_SERVER_PARAMETER_LIMIT = 50000;
 
   const createRouteController = require('./routes/createRoute');
+  const deleteRouteController = require('./routes/deleteRoute');
   const indexRouteController = require('./routes/indexRoute');
   const loginRouteController = require('./routes/loginRoute');
+  const statusRouteController = require('./routes/statusRoute');
   const updateRouteController = require('./routes/updateRoute');
 
   app.set('views', path.join(__dirname, 'views'));
@@ -78,7 +80,9 @@ if (cluster.isMaster) {
 
   app.use('/', indexRouteController);
   app.use('/create', createRouteController);
+  app.use('/delete', deleteRouteController);
   app.use('/login', loginRouteController);
+  app.use('/status', statusRouteController);
   app.use('/update', updateRouteController);
 
   server.listen(PORT, () => {
