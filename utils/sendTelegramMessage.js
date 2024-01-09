@@ -35,28 +35,29 @@ module.exports = (type, data, callback) => {
     return callback('bad_request');
 
   if (type == 'regular_update') {
-    const message = `Ufukta güncelleme var! 🚀%0A%0A${data.chains.map(chain => `
-      ⛓️ ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}%0A
-      📈 Anlık blok yüksekliği: ${chain.latest_block_height}, güncelleme blok yüksekliği: ${chain.latest_update_block_height}%0A
-      🕒 Güncellemeye yaklaşık ${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))} kaldı.%0A%0A
-    `).join('')}`;
+    let message = 'Ufukta güncelleme var! 🚀🚀🚀';
+    
+    for (const chain of data.chains) {
+      message += '\n\n';
+      message += `⛓️ ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}\n`;
+      message += `📈 Anlık blok yüksekliği: ${chain.latest_block_height}, güncelleme blok yüksekliği: ${chain.latest_update_block_height}\n`;
+      message += `🕒 Güncellemeye yaklaşık ${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))} kaldı.`;
+    };
 
-    sendMessage(message, err => {
+    sendMessage(encodeURI(message), err => {
       if (err) return callback(err);
 
       return callback(null);
     });
   } else if (type == 'missed_update') {
     data.chains.forEach(chain => {
-      const message = `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨%0A%0A`;
+      const message = `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨`;
 
-      sendMessage(message, err => {
+      sendMessage(encodeURI(message), err => {
         if (err) return callback(err);
 
         return callback(null);
       });
     });
-  } else {
-    return callback('impossible_error');
   };
 };
