@@ -4,9 +4,9 @@ const router = express.Router();
 
 const isLoggedIn = require('../middleware/isLoggedIn');
 
-const indexGetController = require('../controllers/login/get');
+const indexGetController = require('../controllers/update/get');
 
-const indexPostController = require('../controllers/login/post');
+const indexPostController = require('../controllers/update/post');
 
 router.get(
   '/',

@@ -1,2 +1,10 @@
 extends ../partials/head
 block content
+  .all-wrapper
+    form.form-wrapper(method='POST' action='/update?identifier=' + chain.identifier)
+      h1.general-text-title Edit Chain - #{chain.identifier}
+      span.general-form-input-not-allowed= chain.identifier
+      input.general-form-input(type='text' name='average_block_time' placeholder='Average Block Time (seconds)' value=chain.average_block_time required)
+      .general-form-button-wrapper
+        a.general-form-button(href='/' style='margin-right: 20px') Back
+        button.general-form-button Edit
