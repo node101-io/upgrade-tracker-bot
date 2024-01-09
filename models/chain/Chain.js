@@ -210,6 +210,20 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
   });
 };
 
+ChainSchema.statics.findChainsAndAutoUpdateAll = function (callback) {
+  const Chain = this;
+
+  Chain.find({}, (err, chains) => {
+    if (err) return callback('database_error');
+
+    async.timesSeries(
+      chains.length,
+      (time, next) => Chain.findChainByIdentifierAndAutoUpdate(chains[time].identifier, (err, chain) => next(err, chain)),
+      (err, chains) => callback(err, chains)
+    );
+  });
+};
+
 ChainSchema.statics.findChains = function (callback) {
   const Chain = this;
 

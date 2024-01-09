@@ -1,45 +1,55 @@
 const cron = require('node-cron');
 
+const autoUpdateAllChains = require('./functions/autoUpdateAllChains');
+const checkForMissedUpdates = require('./functions/checkForMissedUpdates');
+const sendHourlyMessage = require('./functions/sendHourlyMessage');
+
 const ONE_MINUTE_IN_MS = 60 * 1000;
 const ONE_SECOND_IN_MS = 1000;
-const REQUEST_INTERVAL = getRequestInterval();
+const UPDATE_INTERVAL = 10 * ONE_SECOND_IN_MS;
 
 let lastKillTime = null;
 
-const performLatestTasksForOneMinute = startTime => {
+const autoUpdateAllChainsForOneMinute = startTime => {
   if (lastKillTime >= startTime)
     return;
   if (Date.now() - startTime >= ONE_MINUTE_IN_MS)
     return;
 
-  performLatestTask(err => {
-    if (err) console.error(`Cron Job Error at performLatestTask (${new Date}): ${err}`);
+    autoUpdateAllChains(err => {
+      if (err) console.error(`Cron Job Error at autoUpdateAllChains (${new Date}): ${err}`);
 
-    setTimeout(() => performLatestTasksForOneMinute(startTime), REQUEST_INTERVAL);
-  });
+      setTimeout(() => autoUpdateAllChainsForOneMinute(startTime), UPDATE_INTERVAL);
+    });
 };
 
 const Job = {
   start: callback => {
-    const job = cron.schedule('* * * * *', () => {
+    const job_every_minute = cron.schedule('* * * * *', () => {
       console.log('Cron Job: ', new Date());
 
-      performBacklogCheckTasks(err => {
-        if (err) console.error(`Cron Job Error at performBacklogCheckTasks (${new Date}): ${err}`);
-      });
+      autoUpdateAllChainsForOneMinute(Date.now());
 
-      createSearchTasks(err => {
-        if (err) console.error(`Cron Job Error at createSearchTasks (${new Date}): ${err}`);
-
-        lastKillTime = Date.now();
-        setTimeout(() => performLatestTasksForOneMinute(Date.now()), ONE_SECOND_IN_MS);
+      checkForMissedUpdates(err => {
+        if (err) console.error(`Cron Job Error at checkForMissedUpdates (${new Date}): ${err}`);
+  
+        return;
       });
     });
 
-    setTimeout(() => {
-      job.start();
-      callback();
-    }, REQUEST_INTERVAL);
+    const job_every_hour = cron.schedule('0 * * * *', () => {
+      console.log('Cron Job: ', new Date());
+
+      sendHourlyMessage(err => {
+        if (err) console.error(`Cron Job Error at sendHourlyMessage (${new Date}): ${err}`);
+  
+        return;
+      });
+    });
+
+    job_every_minute.start();
+    job_every_hour.start();
+    callback();
   }
 };
 

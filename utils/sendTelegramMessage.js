@@ -18,6 +18,9 @@ module.exports = (type, data, callback) => {
   if (!data || typeof data != 'object')
     return callback('bad_request');
 
+  if (!data.chains || !Array.isArray(data.chains) || !data.chains.length)
+    return callback('bad_request');
+
   if (type == 'regular_update') {
     let message = 'Ufukta güncelleme var! 🚀%0A%0A';
     data.chains.forEach(chain => {
