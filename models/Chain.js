@@ -1,10 +1,10 @@
 const async = require('async');
 const mongoose = require('mongoose');
 
-const getChain = require('./functions/getChain.js');
-const getLatestBlockHeight = require('./functions/getLatestBlockHeight.js');
-const getLatestUpdate = require('./functions/getLatestUpdate.js');
-const getRestAPIListFromIdentifier = require('./functions/getRestAPIListFromIdentifier.js');
+const getChain = require('./functions/getChain');
+const getLatestBlockHeight = require('./functions/getLatestBlockHeight');
+const getLatestUpdate = require('./functions/getLatestUpdate');
+const getRestAPIListFromIdentifier = require('./functions/getRestAPIURLFromIdentifier');
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
@@ -43,11 +43,11 @@ const ChainSchema = new Schema({
     min: 0
   },
   is_latest_update_active: {
-    type: Bool,
+    type: Boolean,
     default: false
   },
   latest_update_status: {
-    type: Bool,
+    type: Boolean,
     default: true
   },
   latest_update_missed_last_message_time: {
@@ -243,8 +243,7 @@ ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
   Chain.find({
-    is_latest_update_active: false,
-    latest_update_status: false
+    is_latest_update_active: false
   }, (err, chains) => {
     if (err) return callback('database_error');
 
