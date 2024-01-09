@@ -6,7 +6,6 @@ const APIRoutes = [
 ];
 
 const fetchLatestUpdate = (index, rest_api_list, callback) => {
-  console.log(rest_api_list[index]);
   fetch(rest_api_list[index])
     .then(res => res.json())
     .then(json => {
@@ -41,7 +40,6 @@ module.exports = (rest_api_list, callback) => {
     for (const APIRoute of APIRoutes)
       new_rest_api_list.push(`${rest_api}${APIRoute}`);
 
-  console.log(new_rest_api_list);
   fetchLatestUpdate(0, new_rest_api_list, (err, update) => {
     if (err) return callback(err);
 
