@@ -42,13 +42,9 @@ const ChainSchema = new Schema({
     default: null,
     min: 0
   },
-  is_latest_update_active: {
+  is_missed_last_update: {
     type: Boolean,
     default: false
-  },
-  latest_update_status: {
-    type: Boolean,
-    default: true
   },
   latest_update_missed_last_message_time: {
     type: Date,
@@ -85,7 +81,7 @@ ChainSchema.statics.createChain = function (data, callback) {
           latest_block_height,
           latest_update_id: latest_update ? latest_update.id : null,
           latest_update_block_height: latest_update ? latest_update.block_height : null,
-          is_latest_update_active: latest_update ? latest_update.block_height <= latest_block_height : true
+          is_missed_last_update: latest_update ? latest_update.block_height <= latest_block_height : true
         });
 
         newChain.save((err, chain) => {
@@ -143,7 +139,7 @@ ChainSchema.statics.findChainByIdentifierAndSetStatus = function (identifier, ca
   Chain.findOneAndUpdate({
     identifier: identifier.trim()
   }, { $set: {
-    is_latest_update_active: true
+    is_missed_last_update: false
   }}, { new: true }, (err, chain) => {
     if (err) return callback('database_error');
     if (!chain) return callback('document_not_found');
@@ -219,16 +215,20 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
   
         getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
           if (err) return callback(err);
-  
+
+          const update = {
+            latest_block_height
+          };
+
+          if (latest_update && latest_update.id != chain.latest_update_id) {
+            update.latest_update_id = latest_update.id;
+            update.latest_update_block_height = latest_update.block_height;
+            update.is_missed_last_update = latest_update.block_height <= latest_block_height ? true : false;
+          };
+
           Chain.findOneAndUpdate({
             identifier
-          }, { $set: {
-            latest_block_height,
-            latest_update_id: latest_update ? latest_update.id : null,
-            latest_update_block_height: latest_update ? latest_update.block_height : null,
-            is_latest_update_active: latest_update ? latest_update.block_height <= latest_block_height : true,
-            latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update?.id ? false : true
-          }}, {
+          }, { $set: update }, {
             new: true
           }, (err, chain) => {
             if (err) return callback('database_error');
@@ -294,8 +294,7 @@ ChainSchema.statics.findChainsWithMissedUpdateAndUpdateLastPingTime = function (
   const Chain = this;
 
   Chain.find({
-    is_latest_update_active: false,
-    latest_update_status: false,
+    is_missed_last_update: true,
     latest_update_missed_last_message_time: { $lte: Date.now() - MISSED_UPDATE_PING_INTERVAL }
   }, (err, chains) => {
     if (err) return callback('database_error');
