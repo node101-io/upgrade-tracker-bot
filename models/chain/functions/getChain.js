@@ -8,6 +8,7 @@ module.exports = (chain, callback) => {
     latest_block_height: chain.latest_block_height,
     latest_update_id: chain.latest_update_id,
     latest_update_block_height: chain.latest_update_block_height,
-    latest_update_status: chain.latest_update_status
+    is_missed_last_update: chain.is_missed_last_update,
+    latest_update_missed_last_message_time: chain.latest_update_missed_last_message_time,
   });
 };

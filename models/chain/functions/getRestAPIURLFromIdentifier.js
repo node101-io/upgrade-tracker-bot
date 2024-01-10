@@ -12,11 +12,11 @@ module.exports = (identifier, callback) => {
         rest_api_list.push(providers[i].address);
 
       if (!rest_api_list)
-        return callback('document_not_found', null);
+        return callback('document_not_found_no_log', null);
 
       return callback(null, rest_api_list);
     })
     .catch(_ => {
-      return callback('document_not_found', null);
+      return callback('document_not_found_no_log', null);
     });
 };

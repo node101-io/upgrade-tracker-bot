@@ -23,15 +23,12 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
 };
 
 module.exports = (rest_api_list, callback) => {
-  fetchLatestBlockHeight(0, rest_api_list, (err, height) => {
-    if (err) {
-      if (err == 'document_not_found')
-        sendTelegramMessage('error', {
-          rest_api_list,
-        });
+  const random_index = Math.floor(Math.random() * rest_api_list.length);
+  rest_api_list = rest_api_list.slice(random_index).concat(rest_api_list.slice(0, random_index));
 
+  fetchLatestBlockHeight(0, rest_api_list, (err, height) => {
+    if (err)
       return callback(err);
-    };
 
     return callback(null, height);
   });

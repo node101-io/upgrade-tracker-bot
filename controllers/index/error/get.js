@@ -1,5 +1,12 @@
+const sendTelegramMessage = require('../../../utils/sendTelegramMessage');
+
 module.exports = (req, res) => {
-  return res.json({
-    error: req.query.message ? req.query.message : 'unknown_error'
-  });
+  const error = req.query.message ? req.query.message : 'unknown_error';
+
+  if (!error.includes('no_log'))
+    sendTelegramMessage('error', {
+      error: req.query.message ? req.query.message : 'unknown_error'
+    }, _ => {});
+
+  return res.json({ error });
 };

@@ -10,6 +10,20 @@ const capitalizeFirstLetter = string => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
+const sendMessage = (message, callback) => {
+  fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`)
+    .then(res => res.json())
+    .then(res => {
+      if (!res.ok)
+        return callback('bad_request');
+
+      return callback(null);
+    })
+    .catch(_ => {
+      return callback('network_error');
+    });
+};
+
 module.exports = (type, data, callback) => {
   if (!type || !TYPE_LIST.includes(type))
     return callback('bad_request');
@@ -17,26 +31,21 @@ module.exports = (type, data, callback) => {
   if (!data || typeof data != 'object')
     return callback('bad_request');
 
+  if (type == 'error') {
+    const message = `Ah, yine bir hata: ${data.error}!\nBak, böyle devam ederse ikimiz de hiç ilerleyemeyiz. Hadi, bir an önce bu sorunu çözelim. Unutma, her hatada beraberiz! 🤝`;
+
+    sendMessage(message, err => {
+      if (err)
+        return callback(err);
+
+      return callback(null);
+    });
+  };
+
   if (!data.chains || !Array.isArray(data.chains) || !data.chains.length)
     return callback('bad_request');
 
-  if (type == 'error') {
-    const message = 'Ah, yine bir hata! Bak, böyle devam ederse ikimiz de hiç ilerleyemeyiz. Hadi, bir an önce bu sorunu çözelim. Unutma, her hatada beraberiz. Hata aldığımız URL\'ler:\n' + data.rest_api_list.join(',\n');
-
-    process.env.DEVS_TELEGRAM_CHAT_ID_LIST.split(',').forEach(chat_id => {
-      fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`)
-        .then(res => res.json())
-        .then(res => {
-          if (!res.ok)
-            return callback('bad_request');
-
-          return callback(null);
-        })
-        .catch(_ => {
-          return callback('network_error');
-        });
-    });
-  } else if (type == 'regular_update') {
+  if (type == 'regular_update') {
     let message = 'Ufukta güncelleme var! 🚀';
 
     for (const chain of data.chains) {
@@ -46,32 +55,22 @@ module.exports = (type, data, callback) => {
         `🕒 Güncellemeye yaklaşık ${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))} kaldı.`;
     };
 
-    fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`)
-      .then(res => res.json())
-      .then(res => {
-        if (!res.ok)
-          return callback('bad_request');
+    sendMessage(message, err => {
+      if (err)
+        return callback(err);
 
-        return callback(null);
-      })
-      .catch(_ => {
-        return callback('network_error');
-      });
+      return callback(null);
+    });
   } else if (type == 'missed_update') {
     data.chains.forEach(chain => {
       const message = `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨`;
 
-      fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`)
-        .then(res => res.json())
-        .then(res => {
-          if (!res.ok)
-            return callback('bad_request');
+      sendMessage(message, err => {
+        if (err)
+          return callback(err);
 
-          return callback(null);
-        })
-        .catch(_ => {
-          return callback('network_error');
-        });
+        return callback(null);
+      });
     });
   };
 };

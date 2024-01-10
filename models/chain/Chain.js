@@ -81,7 +81,7 @@ ChainSchema.statics.createChain = function (data, callback) {
           latest_block_height,
           latest_update_id: latest_update ? latest_update.id : null,
           latest_update_block_height: latest_update ? latest_update.block_height : null,
-          is_missed_last_update: latest_update ? latest_update.block_height <= latest_block_height : true
+          is_missed_last_update: latest_update ? latest_update.block_height <= latest_block_height : false,
         });
 
         newChain.save((err, chain) => {
@@ -217,7 +217,7 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
           if (err) return callback(err);
 
           const update = {
-            latest_block_height
+            latest_block_height: Math.max(chain.latest_block_height, latest_block_height)
           };
 
           if (latest_update && latest_update.id != chain.latest_update_id) {
@@ -278,7 +278,7 @@ ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
   Chain.find({
-    is_latest_update_active: false
+    latest_update_block_height: { $ne: null },
   }, (err, chains) => {
     if (err) return callback('database_error');
 
