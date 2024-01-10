@@ -8,9 +8,8 @@ module.exports = (identifier, callback) => {
 
       const rest_api_list = [];
 
-      for (let i = 0; i < providers?.length && i < 3; i++) {
+      for (let i = 0; i < providers?.length && i < 3; i++)
         rest_api_list.push(providers[i].address);
-      };
 
       if (!rest_api_list)
         return callback('document_not_found', null);

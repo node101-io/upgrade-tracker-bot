@@ -32,6 +32,8 @@ if (cluster.isMaster) {
   const MAX_SERVER_UPLOAD_LIMIT = 52428800;
   const MAX_SERVER_PARAMETER_LIMIT = 50000;
 
+  const Job = require('./cron/job');
+
   const createRouteController = require('./routes/createRoute');
   const deleteRouteController = require('./routes/deleteRoute');
   const indexRouteController = require('./routes/indexRoute');
@@ -87,5 +89,9 @@ if (cluster.isMaster) {
 
   server.listen(PORT, () => {
     console.log(`Server is on port ${PORT} as Worker ${cluster.worker.id} running @ process ${cluster.worker.process.pid}`);
+    if (numCPUs == 1 || cluster.worker.id % numCPUs == 1)
+      Job.start(() => {
+        console.log(`Cron Jobs are started on Worker ${cluster.worker.id}`);
+      });
   });
 }

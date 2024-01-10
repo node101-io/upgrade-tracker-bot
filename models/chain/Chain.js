@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const getChain = require('./functions/getChain');
 const getLatestBlockHeight = require('./functions/getLatestBlockHeight');
-const getLatestUpdate = require('./functions/getLatestUpdate');
+const getLatestUpgradeProposal = require('./functions/getLatestUpgradeProposal');
 const getRestAPIListFromIdentifier = require('./functions/getRestAPIURLFromIdentifier');
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
@@ -76,16 +76,16 @@ ChainSchema.statics.createChain = function (data, callback) {
     getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
       if (err) return callback(err);
 
-      getLatestUpdate(rest_api_list, (err, latest_update) => {
-        if (err && err != 'document_not_found') return callback(err);
+      getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
+        if (err) return callback(err);
 
         const newChain = new Chain({
           identifier: data.identifier,
           average_block_time: Number(data.average_block_time),
           latest_block_height,
-          latest_update_id: err ? null : latest_update.id,
-          latest_update_block_height: err ? null : latest_update.block_height,
-          is_latest_update_active: err ? true : (latest_update.block_height <= latest_block_height)
+          latest_update_id: latest_update ? latest_update.id : null,
+          latest_update_block_height: latest_update ? latest_update.block_height : null,
+          is_latest_update_active: latest_update ? latest_update.block_height <= latest_block_height : true
         });
 
         newChain.save((err, chain) => {
@@ -217,17 +217,17 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
       getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
         if (err) return callback(err);
   
-        getLatestUpdate(rest_api_list, (err, latest_update) => {
+        getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
           if (err) return callback(err);
   
           Chain.findOneAndUpdate({
             identifier
           }, { $set: {
             latest_block_height,
-            latest_update_id: latest_update.id,
-            latest_update_block_height: latest_update.block_height,
-            is_latest_update_active: latest_update.block_height <= latest_block_height,
-            latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update.id ? false : true
+            latest_update_id: latest_update ? latest_update.id : null,
+            latest_update_block_height: latest_update ? latest_update.block_height : null,
+            is_latest_update_active: latest_update ? latest_update.block_height <= latest_block_height : true,
+            latest_update_status: !chain.latest_update_status || chain.latest_update_id != latest_update?.id ? false : true
           }}, {
             new: true
           }, (err, chain) => {

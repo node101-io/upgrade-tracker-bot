@@ -4,31 +4,16 @@ const autoUpdateAllChains = require('./functions/autoUpdateAllChains');
 const checkForMissedUpdates = require('./functions/checkForMissedUpdates');
 const sendHourlyMessage = require('./functions/sendHourlyMessage');
 
-const ONE_MINUTE_IN_MS = 60 * 1000;
-const ONE_SECOND_IN_MS = 1000;
-const UPDATE_INTERVAL = 10 * ONE_SECOND_IN_MS;
-
-let lastKillTime = null;
-
-const autoUpdateAllChainsForOneMinute = startTime => {
-  if (lastKillTime >= startTime)
-    return;
-  if (Date.now() - startTime >= ONE_MINUTE_IN_MS)
-    return;
-
-    autoUpdateAllChains(err => {
-      if (err) console.error(`Cron Job Error at autoUpdateAllChains (${new Date}): ${err}`);
-
-      setTimeout(() => autoUpdateAllChainsForOneMinute(startTime), UPDATE_INTERVAL);
-    });
-};
-
 const Job = {
   start: callback => {
-    const job_every_minute = cron.schedule('* * * * *', () => {
+    const job_every_five_minute = cron.schedule('*/5 * * * *', () => {
       console.log('Cron Job: ', new Date());
 
-      autoUpdateAllChainsForOneMinute(Date.now());
+      autoUpdateAllChains(err => {
+        if (err) console.error(`Cron Job Error at autoUpdateAllChains (${new Date}): ${err}`);
+      
+        return;
+      });
 
       checkForMissedUpdates(err => {
         if (err) console.error(`Cron Job Error at checkForMissedUpdates (${new Date}): ${err}`);
@@ -47,7 +32,7 @@ const Job = {
       });
     });
 
-    job_every_minute.start();
+    job_every_five_minute.start();
     job_every_hour.start();
     callback();
   }

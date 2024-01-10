@@ -24,7 +24,14 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
 
 module.exports = (rest_api_list, callback) => {
   fetchLatestBlockHeight(0, rest_api_list, (err, height) => {
-    if (err) return callback(err);
+    if (err) {
+      if (err == 'document_not_found')
+        sendTelegramMessage('error', {
+          rest_api_list,
+        });
+
+      return callback(err);
+    };
 
     return callback(null, height);
   });
