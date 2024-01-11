@@ -32,7 +32,7 @@ if (cluster.isMaster) {
   const MAX_SERVER_UPLOAD_LIMIT = 52428800;
   const MAX_SERVER_PARAMETER_LIMIT = 50000;
 
-  const Job = require('./cron/job');
+  const Job = require('./cron/Job');
 
   const createRouteController = require('./routes/createRoute');
   const deleteRouteController = require('./routes/deleteRoute');
