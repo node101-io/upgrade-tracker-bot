@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 
+const rearrangeArrayFromRandomIndex = require('../../../utils/rearrangeArrayFromRandomIndex');
+
 const APIRoutes = [
   '/cosmos/gov/v1/proposals?pagination.reverse=true&proposal_status=PROPOSAL_STATUS_VOTING_PERIOD',
   '/cosmos/gov/v1/proposals?pagination.reverse=true&status=PROPOSAL_STATUS_VOTING_PERIOD',
@@ -41,10 +43,7 @@ module.exports = (rest_api_list, callback) => {
     for (const APIRoute of APIRoutes)
       rest_api_list_modified.push(`${rest_api}${APIRoute}`);
 
-  const random_index = Math.floor(Math.random() * rest_api_list_modified.length);
-  rest_api_list_modified = rest_api_list_modified.slice(random_index).concat(rest_api_list_modified.slice(0, random_index));
-
-  fetchLatestUpdate(0, rest_api_list_modified, (err, update) => {
+  fetchLatestUpdate(0, rearrangeArrayFromRandomIndex(rest_api_list_modified), (err, update) => {
     if (err)
       return callback(err);
 

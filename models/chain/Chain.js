@@ -8,7 +8,7 @@ const getRestAPIListFromIdentifier = require('./functions/getRestAPIURLFromIdent
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
-const MISSED_UPDATE_PING_INTERVAL = 15 * 60 * 1e3; // 15 mins
+const MISSED_UPDATE_PING_INTERVAL = 5 * 60 * 1e3; // 5 mins
 
 const Schema = mongoose.Schema;
 
@@ -139,7 +139,10 @@ ChainSchema.statics.findChainByIdentifierAndSetStatus = function (identifier, ca
   Chain.findOneAndUpdate({
     identifier: identifier.trim()
   }, { $set: {
-    is_missed_last_update: false
+    is_missed_last_update: false,
+    latest_update_id: null,
+    latest_update_block_height: null,
+    latest_update_missed_last_message_time: null
   }}, { new: true }, (err, chain) => {
     if (err) return callback('database_error');
     if (!chain) return callback('document_not_found');
@@ -216,15 +219,21 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
         getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
           if (err) return callback(err);
 
-          const update = {
-            latest_block_height: Math.max(chain.latest_block_height, latest_block_height)
-          };
+          const update = {};
 
-          if (latest_update && latest_update.id != chain.latest_update_id) {
+          if (chain.latest_block_height < latest_block_height)
+            update.latest_block_height = latest_block_height;
+
+          if (latest_update && latest_update.id != chain.latest_update_id && latest_update.block_height > chain.latest_block_height) {
             update.latest_update_id = latest_update.id;
             update.latest_update_block_height = latest_update.block_height;
-            update.is_missed_last_update = latest_update.block_height <= latest_block_height ? true : false;
           };
+
+          if (chain.latest_update_block_height && chain.latest_update_block_height <= chain.latest_block_height)
+            update.is_missed_last_update = true;
+
+          if (!Object.keys(update).length)
+            return callback(null, chain);
 
           Chain.findOneAndUpdate({
             identifier
@@ -278,6 +287,7 @@ ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
   Chain.find({
+    is_missed_last_update: false,
     latest_update_block_height: { $ne: null },
   }, (err, chains) => {
     if (err) return callback('database_error');

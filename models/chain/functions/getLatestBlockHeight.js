@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 
+const rearrangeArrayFromRandomIndex = require('../../../utils/rearrangeArrayFromRandomIndex');
+
 const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
   fetch(`${rest_api_list[index]}/cosmos/base/tendermint/v1beta1/blocks/latest`)
     .then(res => res.json())
@@ -23,10 +25,7 @@ const fetchLatestBlockHeight = (index, rest_api_list, callback) => {
 };
 
 module.exports = (rest_api_list, callback) => {
-  const random_index = Math.floor(Math.random() * rest_api_list.length);
-  rest_api_list = rest_api_list.slice(random_index).concat(rest_api_list.slice(0, random_index));
-
-  fetchLatestBlockHeight(0, rest_api_list, (err, height) => {
+  fetchLatestBlockHeight(0, rearrangeArrayFromRandomIndex(rest_api_list), (err, height) => {
     if (err)
       return callback(err);
 

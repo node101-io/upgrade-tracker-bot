@@ -31,46 +31,32 @@ module.exports = (type, data, callback) => {
   if (!data || typeof data != 'object')
     return callback('bad_request');
 
-  if (type == 'error') {
-    const message = `Ah, yine bir hata: ${data.error}!\nBak, böyle devam ederse ikimiz de hiç ilerleyemeyiz. Hadi, bir an önce bu sorunu çözelim. Unutma, her hatada beraberiz! 🤝`;
-
-    sendMessage(message, err => {
-      if (err)
-        return callback(err);
-
-      return callback(null);
-    });
-  };
-
-  if (!data.chains || !Array.isArray(data.chains) || !data.chains.length)
+  if ((type == 'regular_update' || type == 'missed_update') && (!data.chains || !Array.isArray(data.chains) || !data.chains.length))
     return callback('bad_request');
 
-  if (type == 'regular_update') {
-    let message = 'Ufukta güncelleme var! 🚀';
+  let message = '';
 
-    for (const chain of data.chains) {
+  if (type == 'regular_update') {
+    message += 'Ufukta güncelleme var! 🚀';
+
+    for (const chain of data.chains)
       message += '\n\n' +
         `⛓️ ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}\n` +
         `📈 Anlık blok yüksekliği: ${chain.latest_block_height}, güncelleme blok yüksekliği: ${chain.latest_update_block_height}\n` +
         `🕒 Güncellemeye yaklaşık ${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))} kaldı.`;
-    };
-
-    sendMessage(message, err => {
-      if (err)
-        return callback(err);
-
-      return callback(null);
-    });
   } else if (type == 'missed_update') {
-    data.chains.forEach(chain => {
-      const message = `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨`;
-
-      sendMessage(message, err => {
-        if (err)
-          return callback(err);
-
-        return callback(null);
-      });
-    });
+    for (const chain of data.chains)
+      message += `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨\n`;
+  } else if (type == 'error') {
+    message += `Ah, yine bir hata: ${data.error}!\nBak, böyle devam ederse ikimiz de hiç ilerleyemeyiz. Hadi, bir an önce bu sorunu çözelim. Unutma, her hatada beraberiz! 🤝`;
+  } else if (type == 'notify_alive') {
+    message += 'Şimdilik update yok sadece günaydın demek istedim. 🌞';
   };
+
+  sendMessage(message, err => {
+    if (err)
+      return callback(err);
+
+    return callback(null);
+  });
 };
