@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const TYPE_LIST = ['error', 'regular_update', 'missed_update'];
+const TYPE_LIST = ['error', 'missed_update', 'notify_alive', 'regular_update'];
 
 const secondsToHoursAndMinutes = seconds => {
   return Math.floor(seconds / 3600) + " saat " + Math.floor((seconds % 3600) / 60) + " dakika";
