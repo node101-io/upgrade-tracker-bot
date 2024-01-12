@@ -44,7 +44,7 @@ const Job = {
             error: `Cron Job Error at sendHourlyMessage (${new Date}): ${err}`
           }, _ => {});
         };
-  
+
         return;
       });
     });

@@ -11,7 +11,7 @@ const capitalizeFirstLetter = string => {
 };
 
 const sendMessage = (message, callback) => {
-  fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}`)
+  fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`)
     .then(res => res.json())
     .then(res => {
       if (!res.ok)
@@ -39,11 +39,20 @@ module.exports = (type, data, callback) => {
   if (type == 'regular_update') {
     message += 'Ufukta güncelleme var! 🚀';
 
-    for (const chain of data.chains)
-      message += '\n\n' +
-        `⛓️ ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}\n` +
-        `📈 Anlık blok yüksekliği: ${chain.latest_block_height}, güncelleme blok yüksekliği: ${chain.latest_update_block_height}\n` +
-        `🕒 Güncellemeye yaklaşık ${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))} kaldı.`;
+    for (const chain of data.chains) {
+      message += '\n\n' + `⛓️ ${capitalizeFirstLetter(chain.identifier)} | `;
+      if (chain.mintscan_identifier)
+        message += `[#${chain.latest_update_id}](https://www.mintscan.io/${chain.mintscan_identifier}/proposals/${chain.latest_update_id})\n`;
+      else
+        message += `#${chain.latest_update_id}\n`;
+      message += `📈 Anlık blok yüksekliği: _${chain.latest_block_height}_, güncelleme blok yüksekliği: `;
+      if (chain.mintscan_identifier)
+        message += `[${chain.latest_update_block_height}](https://www.mintscan.io/${chain.mintscan_identifier}/block/${chain.latest_update_block_height})\n`;
+      else
+        message += `#${chain.latest_update_block_height}\n`;
+      message += `🕒 Güncelleme zamanı: _${new Date((chain.latest_update_block_height - chain.latest_block_height) * chain.average_block_time * 1000 + Date.now()).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}_, `;
+      message += `yaklaşık _${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))}_ kaldı.`;
+    };
   } else if (type == 'missed_update') {
     for (const chain of data.chains)
       message += `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨\n`;

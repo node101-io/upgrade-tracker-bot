@@ -4,6 +4,7 @@ module.exports = (chain, callback) => {
 
   return callback(null, {
     identifier: chain.identifier,
+    mintscan_identifier: chain.mintscan_identifier,
     average_block_time: chain.average_block_time,
     latest_block_height: chain.latest_block_height,
     latest_update_id: chain.latest_update_id,

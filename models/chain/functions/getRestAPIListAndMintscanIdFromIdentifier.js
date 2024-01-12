@@ -4,7 +4,7 @@ module.exports = (identifier, callback) => {
   fetch(`https://raw.githubusercontent.com/cosmos/chain-registry/master/${identifier}/chain.json`)
     .then(res => res.json())
     .then(json => {
-      const providers = json?.apis?.rest;
+      const providers = json.apis?.rest;
 
       const rest_api_list = [];
 
@@ -14,7 +14,12 @@ module.exports = (identifier, callback) => {
       if (!rest_api_list)
         return callback('document_not_found_no_log', null);
 
-      return callback(null, rest_api_list);
+      const mintscan_identifier = json.explorers?.find(explorer => explorer.kind.toLowerCase() == 'mintscan')?.url.split('mintscan.io/')?.[1];
+
+      return callback(null, {
+        rest_api_list,
+        mintscan_identifier
+      });
     })
     .catch(_ => {
       return callback('document_not_found_no_log', null);

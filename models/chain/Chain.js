@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const getChain = require('./functions/getChain');
 const getLatestBlockHeight = require('./functions/getLatestBlockHeight');
 const getLatestUpgradeProposal = require('./functions/getLatestUpgradeProposal');
-const getRestAPIListFromIdentifier = require('./functions/getRestAPIURLFromIdentifier');
+const getRestAPIListAndMintscanIdFromIdentifier = require('./functions/getRestAPIListAndMintscanIdFromIdentifier');
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
@@ -17,6 +17,14 @@ const ChainSchema = new Schema({
     type: String,
     unique: true,
     required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH
+  },
+  mintscan_identifier: {
+    type: String,
+    unique: true,
+    required: false,
     trim: true,
     minlength: 1,
     maxlength: MAX_DATABASE_TEXT_FIELD_LENGTH
@@ -66,17 +74,18 @@ ChainSchema.statics.createChain = function (data, callback) {
 
   const identifier = data.identifier.trim();
 
-  getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
+  getRestAPIListAndMintscanIdFromIdentifier(identifier, (err, res) => {
     if (err) return callback(err);
 
-    getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
+    getLatestBlockHeight(res.rest_api_list, (err, latest_block_height) => {
       if (err) return callback(err);
 
-      getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
+      getLatestUpgradeProposal(res.rest_api_list, (err, latest_update) => {
         if (err) return callback(err);
 
         const newChain = new Chain({
           identifier: data.identifier,
+          mintscan_identifier: res.mintscan_identifier || null,
           average_block_time: Number(data.average_block_time),
           latest_block_height,
           latest_update_id: latest_update ? latest_update.id : null,
@@ -210,16 +219,19 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
   Chain.findChainByIdentifier(identifier, (err, chain) => {
     if (err) return callback(err);
 
-    getRestAPIListFromIdentifier(identifier, (err, rest_api_list) => {
+    getRestAPIListAndMintscanIdFromIdentifier(identifier, (err, res) => {
       if (err) return callback(err);
 
-      getLatestBlockHeight(rest_api_list, (err, latest_block_height) => {
+      getLatestBlockHeight(res.rest_api_list, (err, latest_block_height) => {
         if (err) return callback(err);
   
-        getLatestUpgradeProposal(rest_api_list, (err, latest_update) => {
+        getLatestUpgradeProposal(res.rest_api_list, (err, latest_update) => {
           if (err) return callback(err);
 
           const update = {};
+
+          if (chain.mintscan_identifier != res.mintscan_identifier)
+            update.mintscan_identifier = res.mintscan_identifier;
 
           if (chain.latest_block_height < latest_block_height)
             update.latest_block_height = latest_block_height;
