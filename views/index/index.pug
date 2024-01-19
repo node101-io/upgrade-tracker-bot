@@ -3,6 +3,7 @@ block content
   .all-wrapper
     .all-header
       h1.general-text-title Supported Chain List for the Bot
+      input.general-form-input#chains-search-input(type='text' placeholder='Search Chain' value=chains_search style='margin-left: auto; margin-right: 20px;')
       a.general-form-button(href='/create') Add New Chain
     .all-content
       each chain in chains

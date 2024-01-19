@@ -295,6 +295,57 @@ ChainSchema.statics.findChains = function (callback) {
     .catch(_ => callback('database_error'));
 };
 
+ChainSchema.statics.findChainsByFilters = function (data, callback) {
+  const Chain = this;
+
+  if (!data || typeof data != 'object') {
+    return callback('bad_request')};
+
+  const filters = {};
+
+  if (data.identifier && typeof data.identifier == 'string' && data.identifier.trim().length) {
+    filters.identifier = { $regex: data.identifier.trim(), $options: 'i' };
+  };
+
+  if (!data.search || typeof data.search != 'string' || !data.search.trim().length) {
+    Chain
+    .find(filters)
+    .sort({ identifier: 1 })
+    .then(chains => async.timesSeries(
+      chains.length,
+      (time, next) => getChain(chains[time], (err, chain) => next(err, chain)),
+      (err, chains) => {
+        if (err) return callback(err);
+
+        return callback(null, {
+          search: null,
+          chains
+        });
+      })
+    )
+    .catch(err => callback(0, err));
+  } else {
+    filters.$text = { $search: data.search.trim() };
+
+    Chain
+      .find(filters)
+      .sort({ identifier: 1 })
+      .then(chains => async.timesSeries(
+        chains.length,
+        (time, next) => getChain(chains[time], (err, chain) => next(err, chain)),
+        (err, chains) => {
+          if (err) return callback(err);
+
+          return callback(null, {
+            search: data.search.trim(),
+            chains
+          });
+        })
+      )
+      .catch(err => callback(1, err));
+  };
+};
+
 ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
   const Chain = this;
 
