@@ -34,6 +34,7 @@ if (cluster.isMaster) {
 
   const createRouteController = require('./routes/createRoute');
   const deleteRouteController = require('./routes/deleteRoute');
+  const filterRouteController = require('./routes/filterRoute');
   const indexRouteController = require('./routes/indexRoute');
   const loginRouteController = require('./routes/loginRoute');
   const statusRouteController = require('./routes/statusRoute');
@@ -81,6 +82,7 @@ if (cluster.isMaster) {
   app.use('/', indexRouteController);
   app.use('/create', createRouteController);
   app.use('/delete', deleteRouteController);
+  app.use('/filter', filterRouteController);
   app.use('/login', loginRouteController);
   app.use('/status', statusRouteController);
   app.use('/update', updateRouteController);
