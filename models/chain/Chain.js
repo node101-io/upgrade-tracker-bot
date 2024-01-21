@@ -307,8 +307,7 @@ ChainSchema.statics.findChainsByFilters = function (data, callback) {
     filters.identifier = { $regex: data.identifier.trim(), $options: 'i' };
   };
 
-  if (!data.search || typeof data.search != 'string' || !data.search.trim().length) {
-    Chain
+  Chain
     .find(filters)
     .sort({ identifier: 1 })
     .then(chains => async.timesSeries(
@@ -323,27 +322,7 @@ ChainSchema.statics.findChainsByFilters = function (data, callback) {
         });
       })
     )
-    .catch(err => callback(0, err));
-  } else {
-    filters.$text = { $search: data.search.trim() };
-
-    Chain
-      .find(filters)
-      .sort({ identifier: 1 })
-      .then(chains => async.timesSeries(
-        chains.length,
-        (time, next) => getChain(chains[time], (err, chain) => next(err, chain)),
-        (err, chains) => {
-          if (err) return callback(err);
-
-          return callback(null, {
-            search: data.search.trim(),
-            chains
-          });
-        })
-      )
-      .catch(err => callback(1, err));
-  };
+    .catch(err => callback(null, err));
 };
 
 ChainSchema.statics.findChainsWithActiveUpdate = function (callback) {
