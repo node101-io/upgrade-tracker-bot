@@ -22,7 +22,7 @@ function createChains(chain) {
   generalFormButtonEdit.innerText = 'Edit';
   eachChainWrapper.appendChild(generalFormButtonEdit);
 
-  if (!chain.latest_update_status) {
+  if (chain.is_missed_last_update) {
     const generalFormButtonStatus = document.createElement('a');
     generalFormButtonStatus.classList.add('general-form-button');
     generalFormButtonStatus.style.marginLeft = '20px';
