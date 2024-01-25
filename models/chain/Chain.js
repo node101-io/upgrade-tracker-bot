@@ -23,7 +23,6 @@ const ChainSchema = new Schema({
   },
   mintscan_identifier: {
     type: String,
-    unique: true,
     required: false,
     trim: true,
     minlength: 1,
