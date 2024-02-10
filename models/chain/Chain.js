@@ -285,7 +285,7 @@ ChainSchema.statics.findChains = function (callback) {
 
   Chain
     .find()
-    .sort({ identifier: 1 })
+    .sort({ is_missed_last_update: 1, identifier: 1})
     .then(chains => async.timesSeries(
       chains.length,
       (time, next) => getChain(chains[time], (err, chain) => next(err, chain)),
