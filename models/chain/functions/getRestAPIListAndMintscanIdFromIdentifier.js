@@ -6,7 +6,9 @@ module.exports = (identifier, callback) => {
     .then(json => {
       const providers = json.apis?.rest;
 
-      const rest_api_list = [];
+      const rest_api_list = [
+        'https://rest.cosmos.directory/' + identifier,
+      ];
 
       for (let i = 0; i < providers?.length && i < 3; i++)
         rest_api_list.push(providers[i].address);

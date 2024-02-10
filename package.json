@@ -1,12 +1,12 @@
 {
-  "name": "validator.node101",
+  "name": "upgrade-tracker-bot",
   "version": "1.0.0",
-  "description": "node101 validator management tool",
+  "description": "A bot that tracks the upgrades of the Cosmos chains and sends notifications to the users.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Yunus Gürlek",
+  "author": "node101",
   "license": "MIT",
   "dependencies": {
     "async": "^3.2.4",

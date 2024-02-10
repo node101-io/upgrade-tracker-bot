@@ -7,7 +7,7 @@ module.exports = callback => {
     if (err) return callback(err);
 
     if (!chains.length) {
-      if (new Date(new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })).getHours() == 15)
+      if (new Date(new Date().toLocaleString('tr-TR', { timeZone: process.env.TIMEZONE || 'Europe/Istanbul' })).getHours() == 15)
         sendTelegramMessage('notify_alive', {}, err => {
           if (err) return callback(err);
 

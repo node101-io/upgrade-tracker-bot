@@ -7,7 +7,7 @@ const sendTelegramMessage = require('../utils/sendTelegramMessage');
 
 const Job = {
   start: callback => {
-    const job_every_five_minute = cron.schedule('*/5 * * * *', () => {
+    const job_every_five_minute = cron.schedule(process.env.CRON_AUTO_UPDATE_INTERVAL || '*/5 * * * *', () => {
       console.log('Cron Job: ', new Date());
 
       autoUpdateAllChains(err => {
@@ -33,7 +33,7 @@ const Job = {
       });
     });
 
-    const job_every_hour = cron.schedule('0 * * * *', () => {
+    const job_every_hour = cron.schedule(process.env.CRON_MESSAGE_INTERVAL || '0 * * * *', () => {
       console.log('Cron Job: ', new Date());
 
       sendHourlyMessage(err => {

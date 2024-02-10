@@ -37,7 +37,7 @@ module.exports = (type, data, callback) => {
   let message = '';
 
   if (type == 'regular_update') {
-    message += 'Ufukta güncelleme var! 🚀';
+    message += 'Updates on the horizon! 🚀';
 
     for (const chain of data.chains) {
       message += '\n\n' + `⛓️ ${capitalizeFirstLetter(chain.identifier)} | `;
@@ -45,21 +45,21 @@ module.exports = (type, data, callback) => {
         message += `[#${chain.latest_update_id}](https://www.mintscan.io/${chain.mintscan_identifier}/proposals/${chain.latest_update_id})\n`;
       else
         message += `#${chain.latest_update_id}\n`;
-      message += `📈 Anlık blok yüksekliği: _${chain.latest_block_height}_, güncelleme blok yüksekliği: `;
+      message += `📈 Current block height: _${chain.latest_block_height}_, update block height: `;
       if (chain.mintscan_identifier)
         message += `[${chain.latest_update_block_height}](https://www.mintscan.io/${chain.mintscan_identifier}/block/${chain.latest_update_block_height})\n`;
       else
         message += `#${chain.latest_update_block_height}\n`;
-      message += `🕒 Güncelleme zamanı: _${new Date((chain.latest_update_block_height - chain.latest_block_height) * chain.average_block_time * 1000 + Date.now()).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}_, `;
-      message += `yaklaşık _${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))}_ kaldı.`;
+      message += `🕒 Update time: _${new Date((chain.latest_update_block_height - chain.latest_block_height) * chain.average_block_time * 1000 + Date.now()).toLocaleString('en-US', { timeZone: process.env.TIMEZONE || 'Europe/Istanbul'})}_, `;
+      message += `approximately _${secondsToHoursAndMinutes(chain.average_block_time * (chain.latest_update_block_height - chain.latest_block_height))}_ left.`;
     };
   } else if (type == 'missed_update') {
     for (const chain of data.chains)
-      message += `🚨 ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id} güncellemesi kaçırıldı! 🚨\n`;
+      message += `🚨 Missed update for ${capitalizeFirstLetter(chain.identifier)} #${chain.latest_update_id}! 🚨\n`;
   } else if (type == 'error') {
-    message += `Ah, yine bir hata: ${data.error}!\nBak, böyle devam ederse ikimiz de hiç ilerleyemeyiz. Hadi, bir an önce bu sorunu çözelim. Unutma, her hatada beraberiz! 🤝`;
+    message += `Oh, another error: ${data.error}!\nCome on, let's fix this problem as soon as possible. Remember, we're in this together! 🤝`;
   } else if (type == 'notify_alive') {
-    message += 'Şimdilik update yok sadece günaydın demek istedim. 🌞';
+    message += 'There are no updates for now, I just wanted to say good morning. 🌞';
   };
 
   sendMessage(message, err => {
