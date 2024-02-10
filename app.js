@@ -28,7 +28,7 @@ if (cluster.isMaster) {
   const server = http.createServer(app);
 
   const PORT = process.env.PORT || 3000;
-  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/node101';
+  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/upgrade-tracker';
   const MAX_SERVER_UPLOAD_LIMIT = 52428800;
   const MAX_SERVER_PARAMETER_LIMIT = 50000;
 
@@ -91,7 +91,7 @@ if (cluster.isMaster) {
 
   server.listen(PORT, () => {
     console.log(`Server is on port ${PORT} as Worker ${cluster.worker.id} running @ process ${cluster.worker.process.pid}`);
-    if (numCPUs == 1 || cluster.worker.id % numCPUs == 1)
+    if (numCPUs == 1 || cluster.worker.id % numCPUs == 1) // TODO: Change this to a more reliable way to determine the first worker
       Job.start(() => {
         console.log(`Cron Jobs are started on Worker ${cluster.worker.id}`);
       });

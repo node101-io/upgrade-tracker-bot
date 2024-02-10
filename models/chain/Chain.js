@@ -8,7 +8,7 @@ const getRestAPIListAndMintscanIdFromIdentifier = require('./functions/getRestAP
 
 const DUPLICATED_UNIQUE_FIELD_ERROR_CODE = 11000;
 const MAX_DATABASE_TEXT_FIELD_LENGTH = 1e3;
-const MISSED_UPDATE_PING_INTERVAL = 5 * 60 * 1e3; // 5 mins
+const MISSED_UPDATE_PING_INTERVAL = 15 * 60 * 1e3; // 15 mins
 
 const Schema = mongoose.Schema;
 
@@ -96,10 +96,10 @@ ChainSchema.statics.createChain = function (data, callback) {
           if (err && err.code == DUPLICATED_UNIQUE_FIELD_ERROR_CODE)
             return callback('duplicated_unique_field');
           if (err) return callback('database_error');
-      
+
           getChain(chain, (err, chain) => {
             if (err) return callback(err);
-      
+
             return callback(null, chain);
           });
         });
@@ -253,10 +253,10 @@ ChainSchema.statics.findChainByIdentifierAndAutoUpdate = function (_identifier, 
           }, (err, chain) => {
             if (err) return callback('database_error');
             if (!chain) return callback('document_not_found');
-  
+
             getChain(chain, (err, chain) => {
               if (err) return callback(err);
-  
+
               return callback(null, chain);
             });
           });
@@ -346,7 +346,10 @@ ChainSchema.statics.findChainsWithMissedUpdateAndUpdateLastPingTime = function (
 
   Chain.find({
     is_missed_last_update: true,
-    latest_update_missed_last_message_time: { $lte: Date.now() - MISSED_UPDATE_PING_INTERVAL }
+    $or: [
+      { latest_update_missed_last_message_time: { $lt: Date.now() - MISSED_UPDATE_PING_INTERVAL } },
+      { latest_update_missed_last_message_time: null }
+    ]
   }, (err, chains) => {
     if (err) return callback('database_error');
     
