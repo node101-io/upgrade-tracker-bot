@@ -11,7 +11,7 @@ const capitalizeFirstLetter = string => {
 };
 
 const sendMessage = (message, callback) => {
-  fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown`)
+  fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage?chat_id=${process.env.TELEGRAM_CHAT_ID}&text=${encodeURIComponent(message)}&parse_mode=Markdown&disable_web_page_preview=true`)
     .then(res => res.json())
     .then(res => {
       if (!res.ok)
