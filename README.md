@@ -22,10 +22,6 @@ The frequency of message dispatch by the bot can be customized via environment v
 
 The decision to send messages on an hourly basis was made to avoid overwhelming users with too much information at once and to make tracking updates more manageable. This approach helps in maintaining a clear and organized chain of communication.
 
-## Delete a file
-
-You can delete the current file by clicking the **Remove** button in the file explorer. The file will be moved into the **Trash** folder and automatically deleted after 7 days of inactivity.
-
 ## Marking Upgrades As Done
 
 In the context of the bot, marking updates as done means that the user don't want to be notified about that upgrade anymore.
